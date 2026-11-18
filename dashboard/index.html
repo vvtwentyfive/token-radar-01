@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Launch Radar — Pre-token protocols, priced off live comps</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<a class="skip" href="#boardWrap">Skip to the board</a>
+<header class="top">
+  <div class="brand">
+    <span class="mark" aria-hidden="true"><span class="sweep"></span><span class="ping"></span></span>
+    <div>
+      <p class="wordmark">LAUNCH RADAR</p>
+      <p class="tagline">Pre-token protocols, priced off the tokens that already trade</p>
+    </div>
+  </div>
+  <dl class="meta">
+    <div><dt>Snapshot</dt><dd class="num" id="metaDate">—</dd></div>
+    <div><dt>Model</dt><dd class="num" id="metaModel">—</dd></div>
+    <div><dt>Source</dt><dd id="metaSource">—</dd></div>
+  </dl>
+</header>
+<main id="main">
+  <section class="hero" aria-label="Coverage summary">
+    <p class="headline" id="headline"></p>
+    <div class="tiles">
+      <div class="tile"><span class="tnum num" id="tileWatch">—</span><span class="tlabel">Watchlist covered</span></div>
+      <div class="tile"><span class="tnum num" id="tileRows">—</span><span class="tlabel">Pre-token rows</span></div>
+      <div class="tile"><span class="tnum num" id="tileEarly">—</span><span class="tlabel">Early rows below floor</span></div>
+      <div class="tile"><span class="tnum num" id="tileLive">—</span><span class="tlabel">Live-token set aside</span></div>
+    </div>
+    <p class="honest">Implied value is a model estimate from the snapshot&rsquo;s own figures — not a price, not a prediction that a token launches. &ldquo;No token&rdquo; means the record shows none.</p>
+  </section>
+
+  <div class="controls" id="controls" role="search" aria-label="Board filters">
+    <input id="q" type="search" placeholder="Search name, slug, category, chain&hellip;" aria-label="Search protocols" autocomplete="off">
+    <select id="cat" aria-label="Filter by category"><option value="">All categories</option></select>
+    <select id="chain" aria-label="Filter by chain"><option value="">All chains</option></select>
+    <label class="wl"><input id="wl" type="checkbox"> Watchlist only</label>
+    <div class="tabs" role="tablist" aria-label="Board view">
+      <button id="tabBoard" type="button" role="tab" aria-selected="true" aria-controls="boardWrap">Pre-token board</button>
+      <button id="tabLive" type="button" role="tab" aria-selected="false" aria-controls="liveWrap">Live tokens</button>
+    </div>
+    <p class="count num" id="count" aria-live="polite"></p>
+  </div>
+
+  <section id="boardWrap" role="tabpanel" aria-labelledby="tabBoard" tabindex="0">
+    <div class="tablewrap">
+      <table id="boardTable">
+        <thead><tr>
+          <th aria-sort="ascending"><button type="button" data-key="rank">Rank</button></th>
+          <th><button type="button" data-key="name">Protocol</button></th>
+          <th class="r"><button type="button" data-key="tvl">TVL</button></th>
+          <th class="r"><button type="button" data-key="change">7d %</button></th>
+          <th class="r"><button type="button" data-key="age">Age</button></th>
+          <th class="r"><button type="button" data-key="chains">Chains</button></th>
+          <th class="r"><button type="button" data-key="implied">Implied value</button></th>
+        </tr></thead>
+        <tbody id="boardBody"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="boardEmpty" hidden>
+      <p>No protocols match these filters.</p>
+      <button type="button" data-clear="1">Clear filters</button>
+    </div>
+  </section>
+
+  <section id="liveWrap" role="tabpanel" aria-labelledby="tabLive" tabindex="0" hidden>
+    <p class="livenote">Live-token protocols, set aside from the ranking. Market cap is the market&rsquo;s own value, not a model estimate.</p>
+    <div class="tablewrap">
+      <table id="liveTable">
+        <thead><tr>
+          <th><button type="button" data-key="name">Protocol</button></th>
+          <th class="r"><button type="button" data-key="tvl">TVL</button></th>
+          <th class="r"><button type="button" data-key="change">7d %</button></th>
+          <th class="r"><button type="button" data-key="chains">Chains</button></th>
+          <th class="r" aria-sort="descending"><button type="button" data-key="mcap">Market cap</button></th>
+        </tr></thead>
+        <tbody id="liveBody"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="liveEmpty" hidden>
+      <p>No live tokens match these filters.</p>
+      <button type="button" data-clear="1">Clear filters</button>
+    </div>
+  </section>
+
+  <section class="model" id="modelPanel" aria-labelledby="modelTitle">
+    <h2 id="modelTitle">How the value is fitted</h2>
+    <p class="equation num" id="equation"></p>
+    <p id="fitSummary"></p>
+    <div class="modelgrid">
+      <div>
+        <h3>Out-of-sample check</h3>
+        <div id="looBox"></div>
+        <p id="bandText"></p>
+      </div>
+      <div>
+        <h3>Overlays, stated not fitted</h3>
+        <ul id="overlayList"></ul>
+      </div>
+    </div>
+    <p class="fittednote" id="fittedNote"></p>
+    <div class="sandbox">
+      <div class="sbhead">
+        <h3>Sandbox — retune the overlays</h3>
+        <p class="badge" id="sandboxBadge" hidden>Sandbox active — values recomputed live, board.json unchanged</p>
+      </div>
+      <div class="sliders">
+        <label>Growth weight
+          <input id="sbGrowth" type="range" min="0" max="1" step="0.05" aria-label="Growth weight">
+          <output class="num" id="sbGrowthVal"></output>
+        </label>
+        <label>Maturity floor
+          <input id="sbMaturity" type="range" min="0.3" max="0.8" step="0.05" aria-label="Maturity floor">
+          <output class="num" id="sbMaturityVal"></output>
+        </label>
+        <label>Breadth step
+          <input id="sbBreadth" type="range" min="0" max="0.06" step="0.005" aria-label="Breadth step">
+          <output class="num" id="sbBreadthVal"></output>
+        </label>
+        <button id="sbReset" type="button">Reset</button>
+      </div>
+    </div>
+  </section>
+
+  <p class="setaside" id="setAside"></p>
+</main>
+<footer id="footer"></footer>
+<div class="scrim" id="scrim"></div>
+<aside id="detail" role="dialog" aria-modal="true" aria-labelledby="detailTitle" aria-hidden="true">
+  <div class="detailInner" id="detailInner"></div>
+</aside>
+<script src="../data.js"></script>
+<script src="engine.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
